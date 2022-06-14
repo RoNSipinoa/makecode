@@ -1,23 +1,45 @@
 def on_button_pressed_a():
-    global count
-    count += 1
+    radio.send_string(rsp_mine)
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
-def on_button_pressed_b():
-    global count
-    count += 1
-input.on_button_pressed(Button.B, on_button_pressed_b)
+# rsp
+# 
+# 0 = rock
+# 
+# 1 = scissor
+# 
+# 2 = paper
 
-def toBin(num: number):
-    for index in range(25):
-        if num % 2 ** index == 0:
-            led.plot(index % 5, int(index / 5))
+def on_gesture_shake():
+    global rsp_mine
+    rsp_mine = ["R", "S", "P"][randint(0, 2)]
+    basic.show_string(rsp_mine)
+input.on_gesture(Gesture.SHAKE, on_gesture_shake)
+
+def on_received_string(receivedString):
+    radio.send_string(rsp_mine)
+    if rsp_mine == "R":
+        if receivedString == "R":
+            basic.show_string("D")
+        elif receivedString == "S":
+            basic.show_string("W")
         else:
-            led.unplot(index % 5, index / 5)
-count = 0
+            basic.show_string("L")
+    elif rsp_mine == "S":
+        if receivedString == "R":
+            basic.show_string("L")
+        elif receivedString == "S":
+            basic.show_string("D")
+        else:
+            basic.show_string("W")
+    elif receivedString == "R":
+        basic.show_string("W")
+    elif receivedString == "S":
+        basic.show_string("L")
+    else:
+        basic.show_string("D")
+radio.on_received_string(on_received_string)
 
-def on_forever():
-    basic.show_number(count, 500)
-    toBin(count)
-    basic.pause(2000)
-basic.forever(on_forever)
+rsp_mine = ""
+rsp = 0
+radio.set_group(7)
